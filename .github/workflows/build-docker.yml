@@ -1,0 +1,34 @@
+# .github/workflows/build-docker.yml
+
+name: Build and Push Docker Image to Docker Hub
+
+# Este workflow se ejecuta cada vez que haces un 'push' a la rama 'main'
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-and-push:
+    # La tarea se ejecutará en una máquina virtual de Ubuntu proporcionada por GitHub
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Clona tu repositorio en la máquina virtual para tener acceso a tu código y Dockerfile
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Inicia sesión en Docker Hub usando los secrets que configuramos
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # 3. Construye la imagen y la sube (push) a Docker Hub
+      #    Esta acción es mágica. Usará tu Dockerfile y hará todo el trabajo.
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .         # Usa el Dockerfile en la raíz del proyecto
+          push: true         # Le decimos que sí, que suba la imagen al registro
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/mi-resumidor:latest # El nombre de tu imagen
